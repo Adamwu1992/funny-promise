@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <title>Document</title>
+</head>
+<body>
+
+<script src="../dist/index.js"></script>
+<script>
+  let resolve;
+  let reject;
+  const p = new FunnyPromise((_resolve, _reject) => {
+    resolve = _resolve;
+    reject = _reject;
+  });
+
+  const p1 = p.then(null, () => 10);
+
+  p1.then(value => console.log('p1 is ', value))
+
+  setTimeout(() => {
+    reject(1);
+  }, 1000);
+</script>
+</body>
+</html>

@@ -7,11 +7,13 @@
   "license": "MIT",
   "scripts": {
     "build": "rollup -c",
+    "debug": "babel src -d tmp --source-maps",
     "test": "jest",
     "test:external": "yarn build && promises-aplus-tests adapters.js",
     "test:e": "yarn build && promises-aplus-tests bluebird.js"
   },
   "devDependencies": {
+    "@babel/cli": "^7.2.0",
     "@babel/core": "^7.2.0",
     "@babel/preset-env": "^7.2.0",
     "babel-core": "^7.0.0-bridge",

@@ -4,20 +4,6 @@
   (global.FunnyPromise = factory());
 }(this, (function () { 'use strict';
 
-  function _typeof(obj) {
-    if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") {
-      _typeof = function (obj) {
-        return typeof obj;
-      };
-    } else {
-      _typeof = function (obj) {
-        return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj;
-      };
-    }
-
-    return _typeof(obj);
-  }
-
   function _classCallCheck(instance, Constructor) {
     if (!(instance instanceof Constructor)) {
       throw new TypeError("Cannot call a class as a function");
@@ -41,19 +27,19 @@
   }
 
   function needResolver() {
-    throw new Error('You must pass a resolver function as the first argument to the promise constructor.');
+    throw new TypeError('You must pass a resolver function as the first argument to the promise constructor.');
   }
   function needNew() {
-    throw new Error('Failed to construct \'Promise\': Please use the \'new\' operator, this object constructor cannot be called as a function.');
+    throw new TypeError('Failed to construct \'Promise\': Please use the \'new\' operator, this object constructor cannot be called as a function.');
   }
   function selfFulfilled() {
-    throw new Error('You cannot resolve a promise with itself.');
+    throw new TypeError('You cannot resolve a promise with itself.');
   }
   function returnOwn() {
-    throw new Error('A promises callback cannot return that same promise.');
+    return new TypeError('A promises callback cannot return that same promise.');
   }
   function needArray() {
-    throw new Error('You must pass an array as argument.');
+    throw new TypeError('You must pass an array as argument.');
   }
   function noop() {}
   function isFunction(x) {
@@ -88,7 +74,7 @@
   }
 
   function isThenable(x) {
-    return x && _typeof(isFunction(x.then));
+    return x && isFunction(x.then);
   }
 
   function resolve(promise, value) {
@@ -190,7 +176,7 @@
       }
     } else {
       value = result;
-      succeed = ture;
+      succeed = true;
     }
 
     if (promise._state !== PENDING) return; // 将promise迁移到对应的状态
@@ -335,3 +321,4 @@
   return Promise$1;
 
 })));
+//# sourceMappingURL=index.js.map

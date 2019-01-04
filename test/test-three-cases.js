@@ -27,15 +27,15 @@ export function testRejected(value, tester) {
 
   it('immediately-rejecred', done => {
     const d = dfd.deferred();
-    test(d.promise, done);
-    d.resolve(value);
+    tester(d.promise, done);
+    d.reject(value);
   });
 
   it('eventually-rejected', done => {
     const d = dfd.deferred();
-    test(d.promise, done);
+    tester(d.promise, done);
     setTimeout(() => {
-      d.resolve(value);
+      d.reject(value);
     }, 50);
   });
 }

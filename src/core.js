@@ -20,7 +20,7 @@ function tryCatch(callback, value) {
 }
 
 function isThenable(x) {
-  return x && typeof isFunction(x.then);
+  return x && isFunction(x.then);
 }
 
 export function resolve(promise, value) {
@@ -127,7 +127,7 @@ export function invokeCallback(promise, state, callback, result) {
     }
   } else {
     value = result;
-    succeed = ture;
+    succeed = true;
   }
 
   if (promise._state !== PENDING) return;
