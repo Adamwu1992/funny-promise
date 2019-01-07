@@ -1,7 +1,8 @@
 import {
   selfFulfilled,
   isFunction,
-  returnOwn
+  returnOwn,
+  isObjectOrFunction
 } from './utils';
 import asap from './asap';
 
@@ -19,26 +20,32 @@ function tryCatch(callback, value) {
   }
 }
 
-function isThenable(x) {
-  return x && isFunction(x.then);
+function getThen(thenable) {
+  try {
+    return thenable.then;
+  } catch (e) {
+    TRY_CATCH_ERROR.error = e;
+    return TRY_CATCH_ERROR;
+  }
 }
 
 export function resolve(promise, value) {
   if (promise === value) {
     reject(promise, selfFulfilled());
-  } else if (isThenable(value)) {
-    handleMaybeThenable(promise, value);
+  } else if (isObjectOrFunction(value)) {
+    handleMaybeThenable(promise, value, getThen(value));
   } else {
     fulfill(promise, value);
   }
 }
 
-export function handleMaybeThenable(promise, thenable) {
-  const then = thenable.then;
-  if (!isFunction(then)) return;
+export function handleMaybeThenable(promise, thenable, then) {
   // 判断是否promise
   if (thenable.constructor === promise.constructor) {
     handlePromise(promise, thenable);
+  } else if (then === TRY_CATCH_ERROR) {
+    reject(promise, TRY_CATCH_ERROR.error);
+    TRY_CATCH_ERROR.error = null;
   } else {
     fulfill(promise, thenable);
   }
@@ -47,7 +54,7 @@ export function handleMaybeThenable(promise, thenable) {
 export function handlePromise(promise, thenable) {
   if (thenable._state === FULFILLED) {
     fulfill(promise, thenable._result);
-  } else if (thenable._state === RE) {
+  } else if (thenable._state === REJECTED) {
     reject(promise, thenable._result);
   } else {
     subscribe(

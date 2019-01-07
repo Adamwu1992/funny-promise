@@ -32,3 +32,8 @@ let id = 0;
 export function nextId() {
   return id++;
 }
+
+export function isObjectOrFunction(x) {
+  const t = typeof x;
+  return x !== null && (t === 'object' || t === 'function');
+}

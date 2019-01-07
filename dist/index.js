@@ -4,6 +4,20 @@
   (global.FunnyPromise = factory());
 }(this, (function () { 'use strict';
 
+  function _typeof(obj) {
+    if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") {
+      _typeof = function (obj) {
+        return typeof obj;
+      };
+    } else {
+      _typeof = function (obj) {
+        return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj;
+      };
+    }
+
+    return _typeof(obj);
+  }
+
   function _classCallCheck(instance, Constructor) {
     if (!(instance instanceof Constructor)) {
       throw new TypeError("Cannot call a class as a function");
@@ -52,6 +66,11 @@
   function nextId() {
     return id$1++;
   }
+  function isObjectOrFunction(x) {
+    var t = _typeof(x);
+
+    return x !== null && (t === 'object' || t === 'function');
+  }
 
   function asap (callback, args) {
     setTimeout(callback, 1, args);
@@ -73,25 +92,34 @@
     }
   }
 
-  function isThenable(x) {
-    return x && isFunction(x.then);
+  function getThen(thenable) {
+    try {
+      return thenable.then;
+    } catch (e) {
+      TRY_CATCH_ERROR.error = e;
+      return TRY_CATCH_ERROR;
+    }
   }
 
   function resolve(promise, value) {
     if (promise === value) {
       reject(promise, selfFulfilled());
-    } else if (isThenable(value)) {
-      handleMaybeThenable(promise, value);
+    } else if (isObjectOrFunction(value)) {
+      handleMaybeThenable(promise, value, getThen(value));
     } else {
       fulfill(promise, value);
     }
   }
-  function handleMaybeThenable(promise, thenable) {
-    var then = thenable.then;
-    if (!isFunction(then)) return; // 判断是否promise
-
+  function handleMaybeThenable(promise, thenable, then) {
+    // if (!isFunction(then)) {
+    //   return;
+    // };
+    // 判断是否promise
     if (thenable.constructor === promise.constructor) {
       handlePromise(promise, thenable);
+    } else if (then === TRY_CATCH_ERROR) {
+      reject(promise, TRY_CATCH_ERROR.error);
+      TRY_CATCH_ERROR.error = null;
     } else {
       fulfill(promise, thenable);
     }
@@ -99,7 +127,7 @@
   function handlePromise(promise, thenable) {
     if (thenable._state === FULFILLED) {
       fulfill(promise, thenable._result);
-    } else if (thenable._state === RE) {
+    } else if (thenable._state === REJECTED) {
       reject(promise, thenable._result);
     } else {
       subscribe(thenable, undefined, function (value) {

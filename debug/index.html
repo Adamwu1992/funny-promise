@@ -10,20 +10,33 @@
 
 <script src="../dist/index.js"></script>
 <script>
-  let resolve;
-  let reject;
-  const p = new FunnyPromise((_resolve, _reject) => {
-    resolve = _resolve;
-    reject = _reject;
+  let numberOfTimesThenWasRetrieved = 0;
+  function xFactory() {
+    return Object.create(null, {
+      then: {
+        get() {
+          ++numberOfTimesThenWasRetrieved;
+          return onFulfilled => onFulfilled();
+        }
+      }
+    });
+  }
+  const p1 = FunnyPromise.resolve(1).then(() => xFactory())
+  const p2 = FunnyPromise.reject(1).then(null, () => xFactory());
+
+  p1.then((value) => {
+    console.group('p1');
+    console.log(numberOfTimesThenWasRetrieved);
+    console.log(value);
+    console.groupEnd('p1');
   });
 
-  const p1 = p.then(null, () => 10);
-
-  p1.then(value => console.log('p1 is ', value))
-
-  setTimeout(() => {
-    reject(1);
-  }, 1000);
+  p2.then((value) => {
+    console.group('p2');
+    console.log(numberOfTimesThenWasRetrieved);
+    console.log(value);
+    console.groupEnd('p2');
+  });
 </script>
 </body>
 </html>
