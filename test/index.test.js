@@ -1,6 +1,6 @@
-import dfd from './adapters';
-import bb_dfd from './bluebird';
-import { testFulfilled, testRejected } from './test/test-three-cases';
+import dfd from './_adapters';
+// import bb_dfd from '../bluebird';
+// import { testFulfilled, testRejected } from './test/test-three-cases';
 
 jest.setTimeout(1000)
 global.Promise = null
@@ -297,114 +297,104 @@ global.Promise = null
 //   testRejection(1, '1');
 // })
 
-describe('2.3.3.3:', () => {
-  const resolved = dfd.resolved;
-  const rejected = dfd.rejected;
+// describe('2.3.3.3:', () => {
+//   const resolved = dfd.resolved;
+//   const rejected = dfd.rejected;
 
 
-  function testPromiseResolution(xFactory, test) {
-    it("via return from a fulfilled promise", function (done) {
-        const promise = resolved(1).then(function() {
-            return xFactory();
-        });
+//   function testPromiseResolution(xFactory, test) {
+//     it("via return from a fulfilled promise", function (done) {
+//         const promise = resolved(1).then(function() {
+//             return xFactory();
+//         });
 
-        test(promise, done);
-    });
+//         test(promise, done);
+//     });
 
-    // it("via return from a rejected promise", function (done) {
-    //     const promise = rejected(1).then(null, function() {
-    //         return xFactory();
-    //     });
+//     it("via return from a rejected promise", function (done) {
+//         const promise = rejected(1).then(null, function() {
+//             return xFactory();
+//         });
 
-    //     test(promise, done);
-    // });
-  }
+//         test(promise, done);
+//     });
+//   }
 
-  function testCallingResolvePromise(yFactory, stringRepresentation, test) {
-    describe("`y` is " + stringRepresentation, function () {
-        describe("`then` calls `resolvePromise` synchronously", function () {
-            function xFactory() {
-                return {
-                    then: function (resolvePromise) {
-                        resolvePromise(yFactory());
-                    }
-                };
-            }
+//   function testCallingResolvePromise(yFactory, stringRepresentation, test) {
+//     describe("`y` is " + stringRepresentation, function () {
+//         describe("`then` calls `resolvePromise` synchronously", function () {
+//             function xFactory() {
+//                 return {
+//                     then: function (resolvePromise) {
+//                         resolvePromise(yFactory());
+//                     }
+//                 };
+//             }
 
-            testPromiseResolution(xFactory, test);
-        });
+//             testPromiseResolution(xFactory, test);
+//         });
 
-        describe("`then` calls `resolvePromise` asynchronously", function () {
-            function xFactory() {
-                return {
-                    then: function (resolvePromise) {
-                        setTimeout(function () {
-                            resolvePromise(yFactory());
-                        }, 0);
-                    }
-                };
-            }
+//         describe("`then` calls `resolvePromise` asynchronously", function () {
+//             function xFactory() {
+//                 return {
+//                     then: function (resolvePromise) {
+//                         setTimeout(function () {
+//                             resolvePromise(yFactory());
+//                         }, 0);
+//                     }
+//                 };
+//             }
 
-            testPromiseResolution(xFactory, test);
-        });
-    });
-  }
+//             testPromiseResolution(xFactory, test);
+//         });
+//     });
+//   }
+//   function testCallingResolvePromiseFulfillsWith(yFactory, stringRepresentation, fulfillmentValue) {
+//     testCallingResolvePromise(yFactory, stringRepresentation, (promise, done) => {
+//       promise.then((value) => {
+//         try {
+//           expect(value).toBe(fulfillmentValue);
+//           done();
+//         } catch(e) {
+//           done.fail(e);
+//         }
+//       });
+//     });
+//   }
 
-  function testCallingResolvePromiseRejectsWith(yFactory, stringRepresentation, rejectionReason) {
-    testCallingResolvePromise(yFactory, stringRepresentation, function (promise, done) {
-        promise.then(null, function onPromiseRejected(reason) {
-            assert.strictEqual(reason, rejectionReason);
-            done();
-        });
-    })
-  }
-
-  function testCallingResolvePromiseFulfillsWith(yFactory, stringRepresentation, fulfillmentValue) {
-    testCallingResolvePromise(yFactory, stringRepresentation, (promise, done) => {
-      promise.then((value) => {
-        try {
-          expect(value).toBe(fulfillmentValue);
-          done();
-        } catch(e) {
-          done.fail(e);
-        }
-      });
-    });
-  }
-
-  describe("`y` is not a thenable", function () {
-    // testCallingResolvePromiseFulfillsWith(() => undefined, "`undefined`", undefined);
-    testCallingResolvePromiseFulfillsWith(() => 1, "`1`", 1);
-    // testCallingResolvePromiseFulfillsWith(function () { return null; }, "`null`", null);
-    // testCallingResolvePromiseFulfillsWith(function () { return false; }, "`false`", false);
-    // testCallingResolvePromiseFulfillsWith(function () { return 5; }, "`5`", 5);
-    // testCallingResolvePromiseFulfillsWith(function () { return sentinel; }, "an object", sentinel);
-    // testCallingResolvePromiseFulfillsWith(function () { return sentinelArray; }, "an array", sentinelArray);
-  });
-})
+//   describe("`y` is not a thenable", function () {
+//     testCallingResolvePromiseFulfillsWith(() => 1, "`1`", 1);
+//   });
+// })
 
 
 describe('Manual test', () => {
   const resolved = dfd.resolved;
 
+  function yFactory() {
+    return undefined;
+  }
+
   function xFactory() {
     return {
       then: function (resolvePromise) {
-        resolvePromise(() => undefined);
+        resolvePromise(yFactory());
       }
     };
   }
 
-  const promise = resolved(1).then(function() {
-    return xFactory();
-  });
-
-  promise.then(value => {
-    try {
-      expect(value).toBeUndefined();
-      done();
-    } catch(e) {
-      done.fail(e);
-    }
+  it('Foreign thenable', done => {
+    const promise = resolved(1).then(function() {
+      return xFactory();
+    });
+  
+    promise.then(value => {
+      try {
+        expect(value).toBeUndefined();
+        done();
+      } catch(e) {
+        done.fail(e);
+      }
+  })
   })
 });

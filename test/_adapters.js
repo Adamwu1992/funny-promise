@@ -1,5 +1,5 @@
-const Promise = require('./dist/index');
-
+// const Promise = require('../src/index').default;
+const Promise = require('../dist/index');
 const adapter = {
   resolved(value) {
     return Promise.resolve(value);
