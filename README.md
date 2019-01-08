@@ -1,6 +1,6 @@
 # funny-promise
 
-> A Understanding for Promise Concept.
+> A Understanding for Promise Concept. Inspired by [es6-promise](https://github.com/stefanpenner/es6-promise) and [promises-aplus-tests](https://github.com/promises-aplus/promises-tests)
 
 ## build
 ```bash
