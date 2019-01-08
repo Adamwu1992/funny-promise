@@ -215,90 +215,87 @@ global.Promise = null
 //   })
 // });
 
-describe('2.3.3:', () => {
-  const resolved = dfd.resolved;
-  const rejected = dfd.rejected;
+// describe('2.3.3:', () => {
+//   const resolved = dfd.resolved;
+//   const rejected = dfd.rejected;
 
-  function testPromiseResolution(xFactory, test) {
-    it('via return from a fulfilled promise', done => {
-      const promise = resolved(1).then(() => xFactory());
-      test(promise, done);
-    });
+//   function testPromiseResolution(xFactory, test) {
+//     it('via return from a fulfilled promise', done => {
+//       const promise = resolved(1).then(() => xFactory());
+//       test(promise, done);
+//     });
 
-    it('via return from a rejected promise', done => {
-      const promise = rejected(1).then(null, () => xFactory());
-      test(promise, done);
-    });
-  }
+//     it('via return from a rejected promise', done => {
+//       const promise = rejected(1).then(null, () => xFactory());
+//       test(promise, done);
+//     });
+//   }
 
-  let numberOfTimesThenWasRetrieved = null;
+//   let numberOfTimesThenWasRetrieved = null;
 
-  beforeEach(function () {
-    numberOfTimesThenWasRetrieved = 0;
-  });
+//   beforeEach(function () {
+//     numberOfTimesThenWasRetrieved = 0;
+//   });
 
-  function xFactory() {
-    return Object.create(null, {
-      then: {
-        get() {
-          ++numberOfTimesThenWasRetrieved;
-          return onFulfilled => onFulfilled();
-        }
-      }
-    });
-  }
+//   function xFactory() {
+//     return Object.create(null, {
+//       then: {
+//         get() {
+//           ++numberOfTimesThenWasRetrieved;
+//           return onFulfilled => onFulfilled();
+//         }
+//       }
+//     });
+//   }
 
-  testPromiseResolution(xFactory, (promise, done) => {
-    promise.then(() => {
-      try {
-        expect(numberOfTimesThenWasRetrieved).toBe(1);
-      } catch(e) {
-        done.fail(e);
-      }
-      done();
-    });
-  })
-});
+//   testPromiseResolution(xFactory, (promise, done) => {
+//     promise.then(() => {
+//       try {
+//         expect(numberOfTimesThenWasRetrieved).toBe(1);
+//       } catch(e) {
+//         done.fail(e);
+//       }
+//       done();
+//     });
+//   })
+// });
 
-describe('2.3.3.2:', () => {
-  const resolved = dfd.resolved;
-  // const resolved = bb_dfd.resolved;
+// describe('2.3.3.2:', () => {
+//   const resolved = dfd.resolved;
 
-  function testRejection(e, desc) {
-    function xFactory() {
-      return Object.create(Object.prototype, {
-        then: {
-          get() {
-            throw e;
-          }
-        }
-      })
-    }
+//   function testRejection(e, desc) {
+//     function xFactory() {
+//       return Object.create(Object.prototype, {
+//         then: {
+//           get() {
+//             throw e;
+//           }
+//         }
+//       })
+//     }
 
-    function testPromiseResolution(xFactory, test) {
-      it('via return from a fulfilled promise', done => {
-        const promise = resolved(1).then(() => xFactory());
-        test(promise, done);
-      });
-    }
+//     function testPromiseResolution(xFactory, test) {
+//       it('via return from a fulfilled promise', done => {
+//         const promise = resolved(1).then(() => xFactory());
+//         test(promise, done);
+//       });
+//     }
 
-    describe(`\`e\` is ${desc}`, () => {
-      testPromiseResolution(xFactory, (promise, done) => {
-        promise.then(null, reason => {
-          try {
-            expect(reason).toBe(e);
-          } catch(e) {
-            done.fail(e);
-          }
-          done();
-        })
-      })
-    })
-  }
-
-  testRejection(1, '1');
-
-})
+//     describe(`\`e\` is ${desc}`, () => {
+//       testPromiseResolution(xFactory, (promise, done) => {
+//         promise.then(null, reason => {
+//           try {
+//             expect(reason).toBe(e);
+//           } catch(e) {
+//             done.fail(e);
+//           }
+//           done();
+//         })
+//       })
+//     })
+//   }
+//   testRejection(1, '1');
+// })
 
 describe('2.3.3.3:', () => {
   const resolved = dfd.resolved;
@@ -314,13 +311,13 @@ describe('2.3.3.3:', () => {
         test(promise, done);
     });
 
-    it("via return from a rejected promise", function (done) {
-        const promise = rejected(1).then(null, function() {
-            return xFactory();
-        });
+    // it("via return from a rejected promise", function (done) {
+    //     const promise = rejected(1).then(null, function() {
+    //         return xFactory();
+    //     });
 
-        test(promise, done);
-    });
+    //     test(promise, done);
+    // });
   }
 
   function testCallingResolvePromise(yFactory, stringRepresentation, test) {
@@ -359,20 +356,25 @@ describe('2.3.3.3:', () => {
             assert.strictEqual(reason, rejectionReason);
             done();
         });
-    });
+    })
   }
 
   function testCallingResolvePromiseFulfillsWith(yFactory, stringRepresentation, fulfillmentValue) {
-    testCallingResolvePromise(yFactory, stringRepresentation, function (promise, done) {
-        promise.then(function onPromiseFulfilled(value) {
-            assert.strictEqual(value, fulfillmentValue);
-            done();
-        });
+    testCallingResolvePromise(yFactory, stringRepresentation, (promise, done) => {
+      promise.then((value) => {
+        try {
+          expect(value).toBe(fulfillmentValue);
+          done();
+        } catch(e) {
+          done.fail(e);
+        }
+      });
     });
   }
 
   describe("`y` is not a thenable", function () {
-    testCallingResolvePromiseFulfillsWith(function () { return undefined; }, "`undefined`", undefined);
+    // testCallingResolvePromiseFulfillsWith(() => undefined, "`undefined`", undefined);
+    testCallingResolvePromiseFulfillsWith(() => 1, "`1`", 1);
     // testCallingResolvePromiseFulfillsWith(function () { return null; }, "`null`", null);
     // testCallingResolvePromiseFulfillsWith(function () { return false; }, "`false`", false);
     // testCallingResolvePromiseFulfillsWith(function () { return 5; }, "`5`", 5);
@@ -383,4 +385,26 @@ describe('2.3.3.3:', () => {
 
 
 describe('Manual test', () => {
+  const resolved = dfd.resolved;
+
+  function xFactory() {
+    return {
+      then: function (resolvePromise) {
+        resolvePromise(() => undefined);
+      }
+    };
+  }
+
+  const promise = resolved(1).then(function() {
+    return xFactory();
+  });
+
+  promise.then(value => {
+    try {
+      expect(value).toBeUndefined();
+      done();
+    } catch(e) {
+      done.fail(e);
+    }
+  })
 });

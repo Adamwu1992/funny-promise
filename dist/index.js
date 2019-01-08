@@ -92,6 +92,14 @@
     }
   }
 
+  function tryThen(then, value, onFulfillment, onRejection) {
+    try {
+      then.call(value, onFulfillment, onRejection);
+    } catch (e) {
+      return e;
+    }
+  }
+
   function getThen(thenable) {
     try {
       return thenable.then;
@@ -111,12 +119,11 @@
     }
   }
   function handleMaybeThenable(promise, thenable, then) {
-    // if (!isFunction(then)) {
-    //   return;
-    // };
     // 判断是否promise
     if (thenable.constructor === promise.constructor) {
       handlePromise(promise, thenable);
+    } else if (isFunction(then)) {
+      handleForeignThenable(promise, thenable, then);
     } else if (then === TRY_CATCH_ERROR) {
       reject(promise, TRY_CATCH_ERROR.error);
       TRY_CATCH_ERROR.error = null;
@@ -136,6 +143,30 @@
         return reject(promise, reason);
       });
     }
+  }
+  function handleForeignThenable(promise, thenable, then) {
+    asap(function (promise) {
+      var sealed = false;
+      var error = tryThen(then, thenable, function (value) {
+        if (sealed) return;
+        sealed = true;
+
+        if (thenable !== value) {
+          resolve(promise, value);
+        } else {
+          fulfill(promise, value);
+        }
+      }, function (reason) {
+        if (sealed) return;
+        sealed = true;
+        reject(promise, reason);
+      });
+
+      if (!sealed && error) {
+        sealed = true;
+        reject(promise, error);
+      }
+    }, promise);
   }
   function fulfill(promise, value) {
     if (promise._state !== PENDING) return;

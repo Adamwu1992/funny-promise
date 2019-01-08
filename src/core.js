@@ -20,6 +20,14 @@ function tryCatch(callback, value) {
   }
 }
 
+function tryThen(then, value, onFulfillment, onRejection) {
+  try {
+    then.call(value, onFulfillment, onRejection);
+  } catch(e) {
+    return e;
+  }
+}
+
 function getThen(thenable) {
   try {
     return thenable.then;
@@ -43,6 +51,8 @@ export function handleMaybeThenable(promise, thenable, then) {
   // 判断是否promise
   if (thenable.constructor === promise.constructor) {
     handlePromise(promise, thenable);
+  } else if (isFunction(then)) {
+    handleForeignThenable(promise, thenable, then);
   } else if (then === TRY_CATCH_ERROR) {
     reject(promise, TRY_CATCH_ERROR.error);
     TRY_CATCH_ERROR.error = null;
@@ -64,6 +74,36 @@ export function handlePromise(promise, thenable) {
       reason => reject(promise, reason)
     );
   }
+}
+
+export function handleForeignThenable(promise, thenable, then) {
+  asap(promise => {
+    let sealed = false;
+    const error = tryThen(
+      then,
+      thenable,
+      value => {
+        if (sealed) return;
+        sealed = true;
+        if (thenable !== value) {
+          resolve(promise, value);
+        } else {
+          fulfill(promise, value);
+        }
+      },
+      reason => {
+        if (sealed) return;
+        sealed = true;
+        reject(promise, reason);
+      }
+    );
+
+    if (!sealed && error) {
+      sealed = true;
+      reject(promise, error);
+    }
+
+  }, promise);
 }
 
 export function fulfill(promise, value) {
