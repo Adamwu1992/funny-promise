@@ -9,7 +9,7 @@ npm run build
 
 ## test
 ```bash
-## use external test case `promises-aplus-tests`
+## use external test cases `promises-aplus-tests`
 npm run test
 
 ## test manually
