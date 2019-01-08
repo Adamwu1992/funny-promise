@@ -7,7 +7,6 @@
   "license": "MIT",
   "scripts": {
     "build": "rollup -c",
-    "debug": "babel src -d tmp --source-maps",
     "test:manual": "jest",
     "test": "yarn build && promises-aplus-tests adapters.js"
   },
